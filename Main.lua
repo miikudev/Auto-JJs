@@ -10,7 +10,9 @@ local Config = {
     TargetClicks = 400,
     TargetTime = 420,
     CurrentClicks = 0,
-    StartTime = 0
+    StartTime = 0,
+    ToggleKey = Enum.KeyCode.RightShift,
+    WaitingForKey = false
 }
 
 local ScreenGui
@@ -206,6 +208,30 @@ local function CreateGUI()
     TimeCorner.CornerRadius = UDim.new(0, 4)
     TimeCorner.Parent = TimeInput
     
+    local KeybindButton = Instance.new("TextButton")
+    KeybindButton.Name = "KeybindButton"
+    KeybindButton.Parent = MainFrame
+    KeybindButton.BackgroundColor3 = Color3.fromRGB(150, 100, 200)
+    KeybindButton.BackgroundTransparency = 0.2
+    KeybindButton.Position = UDim2.new(0.1, 0, 0.72, 0)
+    KeybindButton.Size = UDim2.new(0.8, 0, 0, 30)
+    KeybindButton.Font = Enum.Font.GothamBold
+    KeybindButton.Text = "Keybind: RightShift"
+    KeybindButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    KeybindButton.TextSize = 12
+    KeybindButton.BorderSizePixel = 0
+    KeybindButton.ZIndex = 2
+    
+    local KeybindCorner = Instance.new("UICorner")
+    KeybindCorner.CornerRadius = UDim.new(0, 6)
+    KeybindCorner.Parent = KeybindButton
+    
+    local KeybindStroke = Instance.new("UIStroke")
+    KeybindStroke.Color = Color3.fromRGB(255, 255, 255)
+    KeybindStroke.Transparency = 0.7
+    KeybindStroke.Thickness = 1
+    KeybindStroke.Parent = KeybindButton
+    
     local StatusLabel = Instance.new("TextLabel")
     StatusLabel.Name = "StatusLabel"
     StatusLabel.Parent = MainFrame
@@ -246,6 +272,32 @@ local function CreateGUI()
         else
             TimeInput.Text = tostring(Config.TargetTime)
         end
+    end)
+    
+    KeybindButton.MouseButton1Click:Connect(function()
+        if Config.WaitingForKey then return end
+        
+        Config.WaitingForKey = true
+        KeybindButton.Text = "Pressione uma tecla..."
+        KeybindButton.BackgroundColor3 = Color3.fromRGB(255, 200, 80)
+        print("[DEBUG] Aguardando tecla...")
+        
+        local connection
+        connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+            if gameProcessed then return end
+            
+            if input.UserInputType == Enum.UserInputType.Keyboard then
+                Config.ToggleKey = input.KeyCode
+                Config.WaitingForKey = false
+                
+                local keyName = input.KeyCode.Name
+                KeybindButton.Text = "Keybind: " .. keyName
+                KeybindButton.BackgroundColor3 = Color3.fromRGB(150, 100, 200)
+                
+                print("[DEBUG] Keybind configurada para: " .. keyName)
+                connection:Disconnect()
+            end
+        end)
     end)
     
     AdvancedButton.MouseButton1Click:Connect(function()
@@ -418,6 +470,15 @@ end
 
 CreateGUI()
 MonitorInputs()
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed or Config.WaitingForKey then return end
+    
+    if input.KeyCode == Config.ToggleKey then
+        MainFrame.Visible = not MainFrame.Visible
+        print("[DEBUG] UI " .. (MainFrame.Visible and "mostrada" or "escondida"))
+    end
+end)
 
 game:GetService("Players").PlayerRemoving:Connect(function(player)
     if player == LocalPlayer then
