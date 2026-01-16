@@ -10,9 +10,7 @@ local Config = {
     TargetClicks = 400,
     TargetTime = 420,
     CurrentClicks = 0,
-    StartTime = 0,
-    ToggleKey = Enum.KeyCode.RightShift,
-    WaitingForKey = false
+    StartTime = 0
 }
 
 local ScreenGui
@@ -118,69 +116,12 @@ local function CreateGUI()
     DelayStroke.Thickness = 1
     DelayStroke.Parent = DelayInput
     
-    local KeybindFrame = Instance.new("Frame")
-    KeybindFrame.Name = "KeybindFrame"
-    KeybindFrame.Parent = MainFrame
-    KeybindFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    KeybindFrame.BackgroundTransparency = 0.3
-    KeybindFrame.Position = UDim2.new(0.1, 0, 0.48, 0)
-    KeybindFrame.Size = UDim2.new(0.8, 0, 0, 30)
-    KeybindFrame.BorderSizePixel = 0
-    KeybindFrame.ZIndex = 2
-    
-    local KeybindFrameCorner = Instance.new("UICorner")
-    KeybindFrameCorner.CornerRadius = UDim.new(0, 6)
-    KeybindFrameCorner.Parent = KeybindFrame
-    
-    local KeybindFrameStroke = Instance.new("UIStroke")
-    KeybindFrameStroke.Color = Color3.fromRGB(255, 255, 255)
-    KeybindFrameStroke.Transparency = 0.8
-    KeybindFrameStroke.Thickness = 1
-    KeybindFrameStroke.Parent = KeybindFrame
-    
-    local KeybindLabel = Instance.new("TextLabel")
-    KeybindLabel.Name = "KeybindLabel"
-    KeybindLabel.Parent = KeybindFrame
-    KeybindLabel.BackgroundTransparency = 1
-    KeybindLabel.Position = UDim2.new(0, 10, 0, 0)
-    KeybindLabel.Size = UDim2.new(0.65, -10, 1, 0)
-    KeybindLabel.Font = Enum.Font.Gotham
-    KeybindLabel.Text = "Esconder/Mostrar UI"
-    KeybindLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    KeybindLabel.TextSize = 12
-    KeybindLabel.TextXAlignment = Enum.TextXAlignment.Left
-    KeybindLabel.ZIndex = 2
-    
-    local KeybindButton = Instance.new("TextButton")
-    KeybindButton.Name = "KeybindButton"
-    KeybindButton.Parent = KeybindFrame
-    KeybindButton.BackgroundColor3 = Color3.fromRGB(150, 100, 200)
-    KeybindButton.BackgroundTransparency = 0.2
-    KeybindButton.Position = UDim2.new(0.65, 0, 0.15, 0)
-    KeybindButton.Size = UDim2.new(0.3, 0, 0.7, 0)
-    KeybindButton.Font = Enum.Font.GothamBold
-    KeybindButton.Text = "RightShift"
-    KeybindButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    KeybindButton.TextSize = 11
-    KeybindButton.BorderSizePixel = 0
-    KeybindButton.ZIndex = 2
-    
-    local KeybindButtonCorner = Instance.new("UICorner")
-    KeybindButtonCorner.CornerRadius = UDim.new(0, 4)
-    KeybindButtonCorner.Parent = KeybindButton
-    
-    local KeybindButtonStroke = Instance.new("UIStroke")
-    KeybindButtonStroke.Color = Color3.fromRGB(255, 255, 255)
-    KeybindButtonStroke.Transparency = 0.7
-    KeybindButtonStroke.Thickness = 1
-    KeybindButtonStroke.Parent = KeybindButton
-    
     local AdvancedButton = Instance.new("TextButton")
     AdvancedButton.Name = "AdvancedButton"
     AdvancedButton.Parent = MainFrame
     AdvancedButton.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
     AdvancedButton.BackgroundTransparency = 0.2
-    AdvancedButton.Position = UDim2.new(0.1, 0, 0.6, 0)
+    AdvancedButton.Position = UDim2.new(0.1, 0, 0.48, 0)
     AdvancedButton.Size = UDim2.new(0.8, 0, 0, 30)
     AdvancedButton.Font = Enum.Font.GothamBold
     AdvancedButton.Text = "Modo Avançado: OFF"
@@ -203,7 +144,7 @@ local function CreateGUI()
     AdvancedPanel.Name = "AdvancedPanel"
     AdvancedPanel.Parent = MainFrame
     AdvancedPanel.BackgroundTransparency = 1
-    AdvancedPanel.Position = UDim2.new(0.1, 0, 0.72, 0)
+    AdvancedPanel.Position = UDim2.new(0.1, 0, 0.6, 0)
     AdvancedPanel.Size = UDim2.new(0.8, 0, 0, 60)
     AdvancedPanel.Visible = false
     AdvancedPanel.ZIndex = 2
@@ -305,32 +246,6 @@ local function CreateGUI()
         else
             TimeInput.Text = tostring(Config.TargetTime)
         end
-    end)
-    
-    KeybindButton.MouseButton1Click:Connect(function()
-        if Config.WaitingForKey then return end
-        
-        Config.WaitingForKey = true
-        KeybindButton.Text = "..."
-        KeybindButton.BackgroundColor3 = Color3.fromRGB(255, 200, 80)
-        print("[DEBUG] Aguardando tecla...")
-        
-        local connection
-        connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
-            if gameProcessed then return end
-            
-            if input.UserInputType == Enum.UserInputType.Keyboard then
-                Config.ToggleKey = input.KeyCode
-                Config.WaitingForKey = false
-                
-                local keyName = input.KeyCode.Name
-                KeybindButton.Text = keyName
-                KeybindButton.BackgroundColor3 = Color3.fromRGB(150, 100, 200)
-                
-                print("[DEBUG] Keybind configurada para: " .. keyName)
-                connection:Disconnect()
-            end
-        end)
     end)
     
     AdvancedButton.MouseButton1Click:Connect(function()
@@ -503,17 +418,6 @@ end
 
 CreateGUI()
 MonitorInputs()
-
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if Config.WaitingForKey then return end
-    
-    if UserInputService:GetFocusedTextBox() then return end
-    
-    if input.KeyCode == Config.ToggleKey then
-        MainFrame.Visible = not MainFrame.Visible
-        print("[DEBUG] UI " .. (MainFrame.Visible and "mostrada" or "escondida"))
-    end
-end)
 
 game:GetService("Players").PlayerRemoving:Connect(function(player)
     if player == LocalPlayer then
